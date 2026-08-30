@@ -1,0 +1,426 @@
+/* orcessa app chrome. Orca's canvas styling comes from vendor/orca/links/main.css. */
+
+:root {
+  --bg: #0d0f12;
+  --bg-elev: #161a20;
+  --bg-elev-2: #1d222a;
+  --border: #2a3038;
+  --text: #e6e9ee;
+  --text-dim: #8b94a1;
+  --text-faint: #5b6470;
+  --accent: #72dec2;
+  --accent-dim: #4fa88f;
+  --warn: #ffb545;
+  --danger: #ff6b6b;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ---- Tab bar ---- */
+#tabbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+  user-select: none;
+}
+
+#tabbar .brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+#tabbar nav { display: flex; gap: 4px; }
+
+.tab {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.tab:hover { background: var(--bg-elev-2); color: var(--text); }
+.tab.active {
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+#tabbar .status {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+}
+#tabbar .status.ok { color: var(--accent); }
+#tabbar .status.warn { color: var(--warn); }
+
+/* ---- Layout ---- */
+main { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; z-index: 1; }
+
+.panel {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.panel.active { display: block; }
+
+/* ---- Orca panel: canvas fills it ---- */
+#orca-host { position: absolute; inset: 0; }
+#orca-host canvas { display: block; }
+
+/* Orca toolbar (clear / paste) — sits above the canvas, full width */
+.orca-toolbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+  user-select: none;
+}
+/* Canvas sits below the toolbar; inset pushed down by toolbar height */
+#panel-orca.active #orca-host { top: 36px; }
+
+.orca-tool-btn {
+  appearance: none;
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 11px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.orca-tool-btn:hover { background: var(--bg-elev); border-color: var(--accent-dim); }
+.orca-tool-btn:active { transform: translateY(1px); }
+.orca-tool-btn.is-playing { border-color: var(--accent-dim); color: var(--accent); }
+.orca-tool-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+.orca-tool-spacer { flex: 1; }
+.orca-tool-msg {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.orca-tool-msg.show { opacity: 1; }
+.orca-tool-msg.error { color: var(--danger); }
+.orca-tool-msg.ok { color: var(--accent); }
+
+
+/* ---- SpessaSynth panel ---- */
+#panel-synth { background: var(--bg); overflow: auto; }
+.synth-scroll {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.synth-section { margin-bottom: 32px; }
+.synth-section h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.synth-section .hint {
+  margin: 0 0 14px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.synth-section code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--bg-elev-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* Soundfont controls */
+.sf-subsection {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--border);
+}
+.sf-subsection:last-of-type { border-bottom: none; }
+.sf-subsection h3 {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.loaded-heading {
+  margin: 18px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.sf-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+.file-button {
+  display: inline-block;
+  background: var(--accent);
+  color: #07241d;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.file-button:hover { background: #8ee8d2; }
+
+/* Hosted soundfont buttons */
+.hosted-sf { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hosted-sf-button {
+  appearance: none;
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font: inherit;
+  font-size: 12.5px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.hosted-sf-button:hover:not(:disabled) { background: var(--bg-elev); border-color: var(--accent-dim); }
+.hosted-sf-button:disabled { opacity: 0.55; cursor: default; }
+.hosted-sf-button .hosted-name { font-family: var(--mono); font-size: 12px; }
+.hosted-sf-button .hosted-tag {
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(114, 222, 194, 0.12);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+.hosted-sf-button.is-loaded { border-color: var(--accent); }
+.hosted-sf-button .hosted-check { color: var(--accent); font-weight: 700; }
+
+
+.sf-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sf-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+.sf-list li.loading { opacity: 0.6; }
+.sf-list .sf-name { flex: 1; font-family: var(--mono); font-size: 12px; }
+.sf-list .sf-badge {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  background: var(--bg-elev-2);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.sf-list .sf-remove {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.sf-list .sf-remove:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
+.sf-list .sf-remove:disabled { opacity: 0.35; cursor: not-allowed; }
+.sf-empty { color: var(--text-faint); font-size: 12.5px; padding: 4px 2px; }
+
+/* Channel strips */
+.channels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.channel {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.channel .ch-head { display: flex; align-items: baseline; justify-content: space-between; }
+.channel .ch-num {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.channel .ch-num .ch-tag {
+  font-weight: 400;
+  font-size: 10.5px;
+  margin-left: 6px;
+  color: var(--warn);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.channel .ch-patch-name {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.channel label.drum {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+.channel select {
+  width: 100%;
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.channel select:disabled { opacity: 0.4; cursor: not-allowed; }
+.channel select:focus { outline: 1px solid var(--accent-dim); }
+
+/* ---- Start overlay ---- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 9, 12, 0.92);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: opacity 0.25s;
+}
+.overlay.hidden { opacity: 0; pointer-events: none; }
+.overlay-card {
+  text-align: center;
+  max-width: 440px;
+  padding: 40px 36px;
+}
+.overlay-card h1 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  letter-spacing: 1px;
+  color: var(--accent);
+}
+.overlay-card p { margin: 0 0 22px; color: var(--text-dim); line-height: 1.55; font-size: 14px; }
+#start-button {
+  background: var(--accent);
+  color: #07241d;
+  border: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+}
+#start-button:hover { background: #8ee8d2; }
+#start-button:active { transform: scale(0.98); }
+.overlay-note { margin-top: 18px !important; font-size: 12px !important; color: var(--text-faint) !important; }
+
+/* Paste modal (mobile-friendly clipboard fallback) */
+.paste-card { max-width: 520px; text-align: left; }
+.paste-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.paste-card h2 { margin: 0; font-size: 18px; color: var(--text); }
+.paste-shortcut-btn {
+  background: var(--bg-elev-2);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+.paste-shortcut-btn:hover { background: var(--bg-elev); }
+.paste-shortcut-btn:active { transform: scale(0.95); }
+.paste-textarea {
+  width: 100%;
+  min-height: 160px;
+  margin: 14px 0;
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 13px;
+  resize: vertical;
+  -webkit-appearance: none;
+}
+.paste-textarea:focus { outline: 1px solid var(--accent-dim); border-color: var(--accent-dim); }
+.paste-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.paste-btn-secondary, .paste-btn-primary {
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.paste-btn-secondary { background: var(--bg-elev-2); color: var(--text); border: 1px solid var(--border); }
+.paste-btn-secondary:hover { background: var(--bg-elev); }
+.paste-btn-primary { background: var(--accent); color: #07241d; }
+.paste-btn-primary:hover { background: #8ee8d2; }
+
+
+/* Orca's canvas needs the page background to match its theme (black). */
+#orca-host { background: #000; }

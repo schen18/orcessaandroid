@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Minimal dark theme. The app's real UI lives inside the WebView; this
+      theme only governs the brief native window before the WebView paints
+      and the status / navigation bar colors.
+
+      MUST parent an AppCompat theme because MainActivity extends
+      AppCompatActivity (AppCompat validates the theme lineage at onCreate and
+      throws otherwise). Theme.AppCompat.NoActionBar is provided by the
+      androidx.appcompat:appcompat dependency.
+    -->
+    <style name="Theme.SpressOrca" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="colorPrimaryDark">@color/background</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

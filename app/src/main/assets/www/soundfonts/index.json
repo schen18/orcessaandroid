@@ -1,0 +1,37 @@
+{
+  "_comment_readme": "orcessa hosted-soundfont manifest. List the .sf2/.sf3 files in this /soundfonts/ folder. Auto-generated from the files present. Edit freely.",
+  "soundfonts": [
+    {
+      "name": "Cadenza Strings",
+      "file": "Cadenza_Strings.sf2"
+    },
+    {
+      "name": "DSK Asian DreamZ",
+      "file": "DSK Asian DreamZ.SF2"
+    },
+    {
+      "name": "FS Erhu v2",
+      "file": "FS_Erhu_v2.sf2"
+    },
+    {
+      "name": "MCO",
+      "file": "MCO.sf2"
+    },
+    {
+      "name": "Snt. James Orchestra SF",
+      "file": "Snt._James_Orchestra_SF.sf2"
+    },
+    {
+      "name": "FluidR3Mono GM",
+      "file": "FluidR3Mono_GM.sf3"
+    },
+    {
+      "name": "MuseScore_General",
+      "file": "MuseScore_General.sf3"
+    },
+    {
+      "name": "TimGM6mb",
+      "file": "TimGM6mb.sf2"
+    }
+  ]
+}

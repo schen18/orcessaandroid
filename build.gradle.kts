@@ -1,0 +1,5 @@
+// Top-level build file. Plugins declared here, applied in :app/build.gradle.kts.
+plugins {
+    id("com.android.application") version "9.3.2" apply false
+    id("org.jetbrains.kotlin.android") version "2.2.10" apply false
+}

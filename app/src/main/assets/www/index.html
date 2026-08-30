@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>orcessa — Orca × SpessaSynth</title>
+
+  <!-- Orca's own stylesheet (vendored verbatim) -->
+  <link rel="stylesheet" type="text/css" href="vendor/orca/links/main.css">
+  <!-- App chrome -->
+  <link rel="stylesheet" type="text/css" href="styles.css">
+
+  <!--
+    Import map: resolve the bare specifiers that SpessaSynth's vendored ESM
+    bundles import. The dependency chain is:
+      spessasynth_lib  ->  spessasynth_core  ->  stb-vorbis
+    All three are vendored locally so the app runs offline with no build step.
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "spessasynth_core": "./vendor/spessasynth_core/index.js",
+      "stb-vorbis": "./vendor/stb_vorbis/index.js"
+    }
+  }
+  </script>
+
+  <!--
+    Node-module guard: Orca's udp.js / osc.js call require('dgram') /
+    require('node-osc') at construction time. In a browser `require` is
+    undefined, which would throw a ReferenceError and crash Orca's boot.
+    Provide a shim that returns undefined so those modules self-disable
+    (they already guard with `if (!dgram) { ...; return }`). Must run before
+    any Orca script.
+  -->
+  <script>
+    window.require = function () { return undefined; };
+  </script>
+
+  <!--
+    Orca's 18 source files, loaded as classic scripts in upstream dependency
+    order. Each attaches its class/function to the global scope (Orca, Client,
+    Midi, etc.), exactly as the original desktop/sources/index.html does.
+  -->
+  <script src="vendor/orca/scripts/lib/acels.js"></script>
+  <script src="vendor/orca/scripts/lib/theme.js"></script>
+  <script src="vendor/orca/scripts/lib/history.js"></script>
+  <script src="vendor/orca/scripts/lib/source.js"></script>
+  <script src="vendor/orca/scripts/core/library.js"></script>
+  <script src="vendor/orca/scripts/core/io.js"></script>
+  <script src="vendor/orca/scripts/core/operator.js"></script>
+  <script src="vendor/orca/scripts/core/orca.js"></script>
+  <script src="vendor/orca/scripts/core/transpose.js"></script>
+  <script src="vendor/orca/scripts/core/io/cc.js"></script>
+  <script src="vendor/orca/scripts/core/io/midi.js"></script>
+  <script src="vendor/orca/scripts/core/io/mono.js"></script>
+  <script src="vendor/orca/scripts/core/io/osc.js"></script>
+  <script src="vendor/orca/scripts/core/io/udp.js"></script>
+  <script src="vendor/orca/scripts/clock.js"></script>
+  <script src="vendor/orca/scripts/commander.js"></script>
+  <script src="vendor/orca/scripts/cursor.js"></script>
+  <script src="vendor/orca/scripts/client.js"></script>
+</head>
+<body>
+  <!-- Tab bar -->
+  <header id="tabbar">
+    <div class="brand">orcessa</div>
+    <nav>
+      <button class="tab active" data-tab="orca">Orca</button>
+      <button class="tab" data-tab="synth">SpessaSynth</button>
+    </nav>
+    <div class="status" id="global-status">Audio not started</div>
+  </header>
+
+    <!-- Tab 1: Orca editor -->
+    <main>
+      <section id="panel-orca" class="panel active">
+        <!-- Toolbar: grid actions that wrap the Orca canvas -->
+        <div id="orca-toolbar" class="orca-toolbar">
+          <button type="button" id="orca-play" class="orca-tool-btn" title="Play / Pause the Orca clock (Space)">▶ Play</button>
+          <button type="button" id="orca-clear" class="orca-tool-btn" title="Clear the Orca grid">Clear grid</button>
+          <button type="button" id="orca-load" class="orca-tool-btn" title="Load an .orca patch file from your computer">Load patch…</button>
+          <button type="button" id="orca-paste" class="orca-tool-btn" title="Paste Orca syntax from the clipboard into the grid">Paste</button>
+          <span class="orca-tool-spacer"></span>
+          <span id="orca-tool-msg" class="orca-tool-msg"></span>
+        </div>
+        <!-- Orca's Client appends its <canvas> here -->
+        <div id="orca-host"></div>
+      </section>
+
+
+    <!-- Tab 2: SpessaSynth mixer -->
+    <section id="panel-synth" class="panel">
+      <div class="synth-scroll">
+        <div class="synth-section">
+          <h2>Soundfonts</h2>
+
+          <div class="sf-subsection">
+            <h3>Hosted</h3>
+            <p class="hint">Soundfonts in the server's <code>/soundfonts/</code> folder. Click to load.</p>
+            <div id="hosted-sf" class="hosted-sf">
+              <span class="sf-empty" id="hosted-sf-status">Checking for hosted soundfonts…</span>
+            </div>
+          </div>
+
+          <div class="sf-subsection">
+            <h3>From your computer</h3>
+            <p class="hint">Or load <code>.sf2</code> / <code>.sf3</code> files directly. Files stay in your browser — nothing is uploaded.</p>
+            <div class="sf-controls">
+              <label class="file-button">
+                Add soundfont files…
+                <input type="file" id="sf-file-input" accept=".sf2,.sf3,application/octet-stream" multiple hidden>
+              </label>
+            </div>
+          </div>
+
+          <h3 class="loaded-heading">Loaded soundfonts</h3>
+          <ul id="sf-list" class="sf-list"></ul>
+        </div>
+
+
+        <div class="synth-section">
+          <h2>Channels</h2>
+          <p class="hint">Pick a patch per channel. Channel 10 is the GM drum channel. These mirror the channels Orca's <code>:</code> / <code>%</code> / <code>?</code> operators target.</p>
+          <div id="channels" class="channels"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- One-time audio-start overlay (browsers require a user gesture for AudioContext) -->
+  <div id="start-overlay" class="overlay">
+    <div class="overlay-card">
+      <h1>orcessa</h1>
+      <p>Orca live-coding grid, played through SpessaSynth soundfonts — all in your browser.</p>
+      <button id="start-button">Click to start audio</button>
+      <p class="overlay-note">A click is required so the browser allows audio. You'll then load a soundfont in the SpessaSynth tab.</p>
+    </div>
+  </div>
+
+  <!-- Paste modal: shown when clipboard read is unavailable (e.g. Android WebView).
+       User long-presses the textarea and uses the native Paste gesture. -->
+  <div id="paste-overlay" class="overlay hidden">
+    <div class="overlay-card paste-card">
+      <div class="paste-header">
+        <h2>Paste Orca syntax</h2>
+        <button type="button" id="paste-shortcut" title="Paste from clipboard" class="paste-shortcut-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        </button>
+      </div>
+      <p class="overlay-note">Long-press the box and tap Paste, or use the icon above.</p>
+      <textarea id="paste-textarea" class="paste-textarea" placeholder="Paste Orca syntax here…" autocomplete="off"></textarea>
+      <div class="paste-actions">
+        <button type="button" id="paste-cancel" class="paste-btn-secondary">Cancel</button>
+        <button type="button" id="paste-load" class="paste-btn-primary">Load into grid</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App orchestration (module: imports SpessaSynth, boots Orca, wires the MIDI bridge, builds the mixer) -->
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
